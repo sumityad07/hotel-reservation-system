@@ -65,7 +65,7 @@ const useAuthStore = create((set,get) => ({
         withCredentials: true,
       });
 
-      console.log('Signup successful:', response.data);
+     
       if(response?.data?.token){
         localStorage.setItem("token", response.data.token);
       }
@@ -103,16 +103,12 @@ const useAuthStore = create((set,get) => ({
         withCredentials: true,
       });
 
-      console.log('--- Debugging Login Success Response ---');
-      console.log('Full response.data from backend:', response.data);
-      console.log('Value of response.data.role received:', response.data.role);
-      console.log('Value of response.data.id received:', response.data.id);
-
+    
       if(response?.data?.token){
         localStorage.setItem("token", response.data.token);
       }
 
-      // --- CRITICAL FIX: Ensure userRole and userId are set from response ---
+
       set({
         successMessage: response.data.message,
         loading: false,
@@ -121,9 +117,7 @@ const useAuthStore = create((set,get) => ({
         userId: response.data.id || response.data.user_id // Direct assignment from response
       });
 
-      console.log("Auth store userRole after set:", get().userRole);
-      console.log("Auth store userId after set:", get().userId);
-
+  
 
       setTimeout(()=>{
         navigate("/")
@@ -149,7 +143,7 @@ const useAuthStore = create((set,get) => ({
         withCredentials: true,
       });
 
-      console.log('Logout successful (backend response):', response.data);
+
 
       localStorage.removeItem('token');
       set({

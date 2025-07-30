@@ -80,8 +80,8 @@ const useRoomStore = create((set, get) => ({
 
             if (navigate) {
                 setTimeout(() => {
-                    // Navigate to a page showing this new room type or the hotel it belongs to
-                    navigate(`/roomListing/${hotelId}`); // Example: navigate to specific room type detail
+                   
+                    navigate(`/roomListing/${hotelId}`); 
                 }, 1000);
             }
 

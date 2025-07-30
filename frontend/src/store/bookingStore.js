@@ -58,7 +58,7 @@ const useBookingStore = create((set, get) => ({
         // Removed: totalPrice from payload as backend calculates it
       });
 
-      console.log('Booking successful:', response.data);
+      
       set({ message: response.data.message || 'Booking created successfully!', loading: false });
       
 
@@ -98,7 +98,7 @@ const useBookingStore = create((set, get) => ({
       }
       
       set({ myBookings: fetchedBookings, loading: false, error: null, message: 'Bookings loaded!' });
-      console.log('  myBookings state after successful set:', get().myBookings);
+    
 
     } catch (err) {
       console.error("--- FETCH ERROR IN STORE ---");
