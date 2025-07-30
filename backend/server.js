@@ -19,10 +19,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors({
-  origin: [
-    'https://hotel-reservation-system-pu4l.onrender.com',
-      'https://sumithotelbooking.netlify.app',
-  ],
+  origin: true,
   credentials: true
 }));
 
