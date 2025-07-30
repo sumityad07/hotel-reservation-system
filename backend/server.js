@@ -21,7 +21,7 @@ app.use(cookieParser());
 app.use(cors({
   origin: [
     'https://hotel-reservation-system-pu4l.onrender.com',
-      'https://loquacious-malasada-b96bcc.netlify.app',
+      'https://sumithotelbooking.netlify.app',
   ],
   credentials: true
 }));
