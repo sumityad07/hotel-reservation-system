@@ -13,10 +13,18 @@ import BookingPage from "./pages/Bookingpage"
 import BookingDetailsPage from './pages/BookingDetailsPage'
 import MyBooking from './pages/MyBooking'
 import SearchedHotel from './pages/SearchedHotel'
+import useAuthStore from './store/authStore'; 
 function App() {
  
+   const initializeAuth = useAuthStore((state) => state.initializeAuth); // Get the initializeAuth action
+
+  // Call initializeAuth when the app component mounts
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
 
   return (
+
     <>
  
   <Router>
@@ -45,5 +53,6 @@ function App() {
 }
 import PublishedHotel from './pages/PublishedHotel'
 import Footer from './pages/Footer'
+import useAuthStore from './store/authStore'
 
 export default App
