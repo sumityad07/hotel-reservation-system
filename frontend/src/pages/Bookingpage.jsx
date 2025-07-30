@@ -9,6 +9,7 @@ import Loader from '../components/Loader/Loader'; // Assuming this import is cor
 
 const BookingPage = () => {
   const { hotelId, roomTypeId } = useParams();
+  
   const navigate = useNavigate();
 
   // Get userId and isLoggedIn from useAuthStore

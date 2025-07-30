@@ -20,12 +20,19 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors({
   origin: [
-    "https://hotel-reservation-system-h4s7.onrender.com",
-    "https://sumithotelbooking.netlify.app",
-    "http://192.168.29.113:5178",
+    'http://localhost:5179', // Your local frontend (current port)
+    'http://localhost:5175', // Keep if you use this port sometimes
+    'http://localhost:5174', // Keep if you use this port sometimes
+    'http://localhost:5173', // Keep if you use this port sometimes
+    'http://192.168.29.113:5179', // Your laptop's IP for mobile testing
+    'https://sumithotelbooking.netlify.app', // Your deployed Netlify frontend
+    'https://hotel-reservation-system-h4s7.onrender.com', // Your deployed backend (for self-requests if any)
   ],
   credentials: true
 }));
+
+
+
 
 app.get('/api/hotel/details/:id', protect, getHotelById);
 
