@@ -25,7 +25,7 @@ app.use(cors({
     'http://localhost:5174', // Keep if you use this port sometimes
     'http://localhost:5173', // Keep if you use this port sometimes
     'http://192.168.29.113:5179', // Your laptop's IP for mobile testing
-    'https://hotel-reservation-system-delta.vercel.app/', // Your deployed Netlify frontend
+    'https://hotel-reservation-system-delta.vercel.app', // Your deployed Netlify frontend
     'https://hotel-reservation-system-h4s7.onrender.com', // Your deployed backend (for self-requests if any)
   ],
   credentials: true
