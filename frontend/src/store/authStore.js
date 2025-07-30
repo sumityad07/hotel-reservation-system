@@ -13,22 +13,20 @@ const Api_url = "/user"
 // Helper function to decode token and get user details
 const getDecodedTokenDetails = () => {
   const token = localStorage.getItem('token');
-  console.log("PRODUCTION DEBUG - getDecodedTokenDetails: Token from localStorage (at init):", token); // <-- Add this
   if (token) {
     try {
       const decoded = jwtDecode(token);
-      console.log("PRODUCTION DEBUG - getDecodedTokenDetails: Decoded payload:", decoded); // <-- Add this
+      // Ensure your JWT payload has 'role' and 'id'
       return {
         role: decoded.role || null,
-        id: decoded.id || decoded._id || null
+        id: decoded.id || decoded._id || null // Handle both 'id' and '_id'
       };
     } catch (error) {
-      console.error("PRODUCTION DEBUG - getDecodedTokenDetails: jwt-decode FAILED:", error); // <-- Add this
+      console.error("Failed to decode token from localStorage:", error);
       localStorage.removeItem('token'); // Remove invalid token
       return { role: null, id: null };
     }
   }
-  console.log("PRODUCTION DEBUG - getDecodedTokenDetails: No token in localStorage."); // <-- Add this
   return { role: null, id: null };
 };
 
@@ -67,7 +65,7 @@ const useAuthStore = create((set,get) => ({
         withCredentials: true,
       });
 
-     
+      console.log('Signup successful:', response.data);
       if(response?.data?.token){
         localStorage.setItem("token", response.data.token);
       }
@@ -105,15 +103,16 @@ const useAuthStore = create((set,get) => ({
         withCredentials: true,
       });
 
-    console.log('PRODUCTION DEBUG - Login Response Data:', response.data); // <-- Add this
-    console.log('PRODUCTION DEBUG - Token in Response:', response.data.token); // <-- Add this
+      console.log('--- Debugging Login Success Response ---');
+      console.log('Full response.data from backend:', response.data);
+      console.log('Value of response.data.role received:', response.data.role);
+      console.log('Value of response.data.id received:', response.data.id);
 
-    
       if(response?.data?.token){
         localStorage.setItem("token", response.data.token);
       }
 
-
+      // --- CRITICAL FIX: Ensure userRole and userId are set from response ---
       set({
         successMessage: response.data.message,
         loading: false,
@@ -122,7 +121,9 @@ const useAuthStore = create((set,get) => ({
         userId: response.data.id || response.data.user_id // Direct assignment from response
       });
 
-  
+      console.log("Auth store userRole after set:", get().userRole);
+      console.log("Auth store userId after set:", get().userId);
+
 
       setTimeout(()=>{
         navigate("/")
@@ -148,7 +149,7 @@ const useAuthStore = create((set,get) => ({
         withCredentials: true,
       });
 
-
+      console.log('Logout successful (backend response):', response.data);
 
       localStorage.removeItem('token');
       set({
