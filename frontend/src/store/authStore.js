@@ -1,6 +1,6 @@
 import {create} from 'zustand';
 import axios from 'axios';
-import {jwtDecode} from 'jwt-decode'; // You'll need to install this library
+import jwt_decode from 'jwt-decode'; // You'll need to install this library
 import axiosInstance from './axiosInstance';
 
 // Install jwt-decode:

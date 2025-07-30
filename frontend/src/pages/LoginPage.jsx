@@ -9,6 +9,7 @@ import signupbtn_full from '../assets/signbtn_full.png';
 import { Link } from 'react-router-dom';
 const LoginPage = () => {
   const navigate = useNavigate();
+    console.log("LoginPage: Token in localStorage on render:", localStorage.getItem('token'));
 
   // Select state and actions from the store
   const {
