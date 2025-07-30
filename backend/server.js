@@ -20,11 +20,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors({
   origin: [
-    'http://192.168.29.113:5175', // Your laptop's IP and React app port (for mobile testing)
-    'http://localhost:5175' 
+    'https://hotel-reservation-system-pu4l.onrender.com',
+      'https://loquacious-malasada-b96bcc.netlify.app',
   ],
   credentials: true
 }));
+app.options('*', cors());
 app.get('/api/hotel/details/:id', protect, getHotelById);
 
 //routes
