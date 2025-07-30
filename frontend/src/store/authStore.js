@@ -1,26 +1,39 @@
 import {create} from 'zustand';
 import axios from 'axios';
-import jwt_decode from 'jwt-decode/build/jwt-decode.js'; // Ensure this path is correct
+import jwt_decode from 'jwt-decode'; // You'll need to install this library
 import axiosInstance from './axiosInstance';
 
-// Helper function to decode token and get user details (this function itself is fine)
+// Install jwt-decode:
+// npm install jwt-decode
+// or
+// yarn add jwt-decode
+
+const Api_url = "/user"
+
+// Helper function to decode token and get user details
 const getDecodedTokenDetails = () => {
   const token = localStorage.getItem('token');
+  console.log("PRODUCTION DEBUG - getDecodedTokenDetails: Token from localStorage (at init):", token); // <-- Add this
   if (token) {
     try {
       const decoded = jwt_decode(token);
+      console.log("PRODUCTION DEBUG - getDecodedTokenDetails: Decoded payload:", decoded); // <-- Add this
       return {
         role: decoded.role || null,
         id: decoded.id || decoded._id || null
       };
     } catch (error) {
-      console.error("Failed to decode token from localStorage:", error);
+      console.error("PRODUCTION DEBUG - getDecodedTokenDetails: jwt-decode FAILED:", error); // <-- Add this
       localStorage.removeItem('token'); // Remove invalid token
       return { role: null, id: null };
     }
   }
+  console.log("PRODUCTION DEBUG - getDecodedTokenDetails: No token in localStorage."); // <-- Add this
   return { role: null, id: null };
 };
+
+const { role: initialUserRole, id: initialUserId } = getDecodedTokenDetails();
+
 
 const useAuthStore = create((set,get) => ({
   // --- State ---
@@ -29,10 +42,10 @@ const useAuthStore = create((set,get) => ({
   error: '',
   successMessage: '',
   loading: false,
-  // --- CRITICAL FIX: Initialize these to null/false ---
-  userRole: null,
-  userId: null,
-  isLoggedIn: false, // Will be set to true by initializeAuth or login/signup actions
+  userRole: initialUserRole, // <--- Initialize from decoded token
+  userId: initialUserId,     // <--- Initialize from decoded token
+
+  isLoggedIn: !!localStorage.getItem('token'), // Still check for token existence
 
   // --- Actions ---
   setEmail: (email) => set({ email }),
@@ -44,37 +57,28 @@ const useAuthStore = create((set,get) => ({
   setUserRole: (role) => set({ userRole: role }),
   setUserId: (id) => set({ userId: id }),
 
-  // --- NEW: Action to explicitly initialize auth state from localStorage ---
-  initializeAuth: () => {
-    const { role, id } = getDecodedTokenDetails(); // Decode token from localStorage
-    if (role && id) {
-      set({ isLoggedIn: true, userRole: role, userId: id });
-    } else {
-      set({ isLoggedIn: false, userRole: null, userId: null }); // Ensure cleared if no valid token
-    }
-  },
-
   signup: async (navigate) => {
     const { email, password } = get();
     set({ loading: true, error: '', successMessage: '' });
+
     try{
       const response = await axiosInstance.post(`${Api_url}/signup`, { email, password }, {
         headers: { 'Content-Type': 'application/json' },
         withCredentials: true,
       });
 
+     
       if(response?.data?.token){
         localStorage.setItem("token", response.data.token);
-        // Added delay (keep if it helps)
-        await new Promise(resolve => setTimeout(resolve, 50));
       }
-      // Update state after successful API call and localStorage set
+
+      // --- CRITICAL FIX: Ensure userRole and userId are set from response ---
       set({
         successMessage: response.data.message,
         loading: false,
         isLoggedIn: true,
-        userRole: response.data.role,
-        userId: response.data.id || response.data.user_id
+        userRole: response.data.role, // Direct assignment from response
+        userId: response.data.id || response.data.user_id // Direct assignment from response
       });
 
       setTimeout(()=>{
@@ -84,7 +88,10 @@ const useAuthStore = create((set,get) => ({
       console.error("Signup error:", error);
       set({
         error: error.response?.data?.message || 'Signup failed',
-        loading: false, isLoggedIn: false, userRole: null, userId: null
+        loading: false,
+        isLoggedIn: false,
+        userRole: null,
+        userId: null
       });
     }
   },
@@ -98,19 +105,24 @@ const useAuthStore = create((set,get) => ({
         withCredentials: true,
       });
 
+    console.log('PRODUCTION DEBUG - Login Response Data:', response.data); // <-- Add this
+    console.log('PRODUCTION DEBUG - Token in Response:', response.data.token); // <-- Add this
+
+    
       if(response?.data?.token){
         localStorage.setItem("token", response.data.token);
-        // Added delay (keep if it helps)
-        await new Promise(resolve => setTimeout(resolve, 50));
       }
-      // Update state after successful API call and localStorage set
+
+
       set({
         successMessage: response.data.message,
         loading: false,
         isLoggedIn: true,
-        userRole: response.data.role,
-        userId: response.data.id || response.data.user_id
+        userRole: response.data.role, // Direct assignment from response
+        userId: response.data.id || response.data.user_id // Direct assignment from response
       });
+
+  
 
       setTimeout(()=>{
         navigate("/")
@@ -120,38 +132,70 @@ const useAuthStore = create((set,get) => ({
       console.error("login error:", error);
       set({
         error: error.response?.data?.message || 'Login failed',
-        loading: false, isLoggedIn: false, userRole: null, userId: null
+        loading: false,
+        isLoggedIn: false,
+        userRole: null,
+        userId: null
       });
     }
   },
 
   logout: async (navigate) => {
     set({ loading: true, error: '', successMessage: '' });
+
     try {
-      const response = await axios.delete(`${Api_url}/logout`, { withCredentials: true, });
-      console.log('Logout successful (backend response):', response.data);
-      localStorage.removeItem('token');
-      set({
-        isLoggedIn: false, successMessage: response.data.message || "Logged out successfully!",
-        loading: false, userRole: null, userId: null
+      const response = await axios.delete(`${Api_url}/logout`, {
+        withCredentials: true,
       });
-      get().resetForm(); // Reset form also clears userRole/userId
-      if (navigate) { setTimeout(() => { navigate("/login"); }, 200); }
-    } catch (error) {
-      console.error("Logout failed error:", error);
+
+
+
       localStorage.removeItem('token');
       set({
-        isLoggedIn: false, error: error.response?.data?.message || "Logout failed. Please try again.",
-        loading: false, userRole: null, userId: null
+        isLoggedIn: false,
+        successMessage: response.data.message || "Logged out successfully!",
+        loading: false,
+        userRole: null, // Clear on logout
+        userId: null
       });
       get().resetForm();
-      if (navigate) { setTimeout(() => { navigate("/login"); }, 500); }
+
+      if (navigate) {
+        setTimeout(() => {
+          navigate("/login");
+        }, 200);
+      }
+
+    } catch (error) {
+      console.error("Logout failed error:", error);
+      let errorMessage = error.response?.data?.message || "Logout failed. Please try again.";
+
+      localStorage.removeItem('token');
+      set({
+        isLoggedIn: false,
+        error: errorMessage,
+        loading: false,
+        userRole: null,
+        userId: null
+      });
+      get().resetForm();
+
+      if (navigate) {
+        setTimeout(() => {
+          navigate("/login");
+        }, 500);
+      }
     }
   },
 
   resetForm: () => set({
-    email: '', password: '', error: '', successMessage: '', loading: false,
-    userRole: null, userId: null, isLoggedIn: false // Ensure isLoggedIn is false on reset
+    email: '',
+    password: '',
+    error: '',
+    successMessage: '',
+    loading: false,
+    userRole: null,
+    userId: null
   }),
 
 }));

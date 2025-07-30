@@ -13,18 +13,11 @@ import BookingPage from "./pages/Bookingpage"
 import BookingDetailsPage from './pages/BookingDetailsPage'
 import MyBooking from './pages/MyBooking'
 import SearchedHotel from './pages/SearchedHotel'
-import useAuthStore from './store/authStore.js'; 
 function App() {
  
-   const initializeAuth = useAuthStore((state) => state.initializeAuth); // Get the initializeAuth action
-
-  // Call initializeAuth when the app component mounts
-  useEffect(() => {
-    initializeAuth();
-  }, [initializeAuth]);
 
   return (
-
+    
     <>
  
   <Router>
@@ -35,7 +28,7 @@ function App() {
       <Route path='/login' element ={<LoginPage/>}/>
       <Route path='/profile' element ={<ProfilePage/>}/>
       <Route path='/PublishedHotel' element ={<PublishedHotel/>}/>
-     
+      <Route path='/roomListing' element ={<RoomListing/>}/>
       <Route path="/roomListing/:id" element={<RoomListing />} />
       <Route path="/create-room-type/:hotelId" element={<CreateRoomType />} />
       <Route path="/room/byHotel/:hotelId" element={<RoomByHotel />} />
@@ -53,6 +46,5 @@ function App() {
 }
 import PublishedHotel from './pages/PublishedHotel'
 import Footer from './pages/Footer'
-import useAuthStore from './store/authStore'
 
 export default App
