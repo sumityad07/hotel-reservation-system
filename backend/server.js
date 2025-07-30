@@ -1,7 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import db from "./utils/mangoose.js";
-import userRoutes from "./routes/users/user.js";
+import userRoutes from "./routes/booking/users/user.js";
 import hotelRoutes from "./routes/hoteLInfo/hotel.js";
 import roomRoutes from "./routes/hoteLInfo/roomListing.js";
 import bookingRoutes from "./routes/booking/booking.js";
@@ -25,7 +25,7 @@ app.use(cors({
     'http://localhost:5174', // Keep if you use this port sometimes
     'http://localhost:5173', // Keep if you use this port sometimes
     'http://192.168.29.113:5179', // Your laptop's IP for mobile testing
-    'https://sumithotelbooking.netlify.app', // Your deployed Netlify frontend
+    'https://hotel-reservation-system-delta.vercel.app/', // Your deployed Netlify frontend
     'https://hotel-reservation-system-h4s7.onrender.com', // Your deployed backend (for self-requests if any)
   ],
   credentials: true
