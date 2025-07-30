@@ -21,7 +21,8 @@ app.use(cookieParser());
 app.use(cors({
   origin: [
     "https://hotel-reservation-system-h4s7.onrender.com",
-    "https://sumithotelbooking.netlify.app"
+    "https://sumithotelbooking.netlify.app",
+    "http://192.168.29.113:5178",
   ],
   credentials: true
 }));
