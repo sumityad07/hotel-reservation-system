@@ -1,6 +1,6 @@
 import {create} from 'zustand';
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';  // You'll need to install this library
+import jwt_decode from 'jwt-decode/build/jwt-decode.js';   // You'll need to install this library
 import axiosInstance from './axiosInstance';
 
 // Install jwt-decode:
@@ -16,7 +16,7 @@ const getDecodedTokenDetails = () => {
   console.log("PRODUCTION DEBUG - getDecodedTokenDetails: Token from localStorage (at init):", token); // <-- Add this
   if (token) {
     try {
-      const decoded = jwtDecode(token);
+      const decoded = jwt_decode(token);
       console.log("PRODUCTION DEBUG - getDecodedTokenDetails: Decoded payload:", decoded); // <-- Add this
       return {
         role: decoded.role || null,
@@ -69,10 +69,11 @@ const useAuthStore = create((set,get) => ({
 
      
       if(response?.data?.token){
+         await new Promise(resolve => setTimeout(resolve, 50)); 
         localStorage.setItem("token", response.data.token);
       }
 
-      // --- CRITICAL FIX: Ensure userRole and userId are set from response ---
+    
       set({
         successMessage: response.data.message,
         loading: false,
@@ -110,6 +111,7 @@ const useAuthStore = create((set,get) => ({
 
     
       if(response?.data?.token){
+         await new Promise(resolve => setTimeout(resolve, 50)); 
         localStorage.setItem("token", response.data.token);
       }
 
@@ -121,7 +123,7 @@ const useAuthStore = create((set,get) => ({
         userRole: response.data.role, // Direct assignment from response
         userId: response.data.id || response.data.user_id // Direct assignment from response
       });
-
+   await new Promise(resolve => setTimeout(resolve, 50)); // 50ms delay
   
 
       setTimeout(()=>{
