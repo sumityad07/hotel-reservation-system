@@ -1,6 +1,6 @@
 import {create} from 'zustand';
 import axios from 'axios';
-import jwt_decode from 'jwt-decode'; // You'll need to install this library
+import { jwtDecode } from 'jwt-decode';  // You'll need to install this library
 import axiosInstance from './axiosInstance';
 
 // Install jwt-decode:
@@ -16,7 +16,7 @@ const getDecodedTokenDetails = () => {
   console.log("PRODUCTION DEBUG - getDecodedTokenDetails: Token from localStorage (at init):", token); // <-- Add this
   if (token) {
     try {
-      const decoded = jwt_decode(token);
+      const decoded = jwtDecode(token);
       console.log("PRODUCTION DEBUG - getDecodedTokenDetails: Decoded payload:", decoded); // <-- Add this
       return {
         role: decoded.role || null,
