@@ -20,8 +20,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors({
   origin: [
-    'http://192.168.29.113:5173', // Your laptop's IP and React app port (for mobile testing)
-    'http://localhost:5173' 
+    'http://192.168.29.113:5175', // Your laptop's IP and React app port (for mobile testing)
+    'http://localhost:5175' 
   ],
   credentials: true
 }));
