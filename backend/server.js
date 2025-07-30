@@ -25,7 +25,7 @@ app.use(cors({
   ],
   credentials: true
 }));
-app.options('*', cors());
+
 app.get('/api/hotel/details/:id', protect, getHotelById);
 
 //routes
