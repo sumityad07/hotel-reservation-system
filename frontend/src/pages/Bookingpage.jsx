@@ -82,7 +82,7 @@ const BookingPage = () => {
           name="Number of Guests"
           type="number"
           value={numberOfGuests}
-          onChange={(e) => setNumberOfGuests(parseInt(e.target.value, 10) || 1)} // <--- Added radix 10, default 1
+          onChange={(e) => setNumberOfGuests(parseInt(e.target.value, 10) )} // <--- Added radix 10, default 1
           min="1"
           max="10" // Hardcode a reasonable max, as roomTypeDetails.maximumOccupancy is not fetched
           required

@@ -1,6 +1,6 @@
 import {create} from 'zustand';
 import axios from 'axios';
-import {jwtDecode} from 'jwt-decode'; // You'll need to install this library
+import { decodeJwt } from 'jose';// You'll need to install this library
 import axiosInstance from './axiosInstance';
 
 // Install jwt-decode:
@@ -15,7 +15,7 @@ const getDecodedTokenDetails = () => {
   const token = localStorage.getItem('token');
   if (token) {
     try {
-      const decoded = jwtDecode(token);
+      const decoded = decodeJwt(token);
       // Ensure your JWT payload has 'role' and 'id'
       return {
         role: decoded.role || null,
@@ -68,6 +68,7 @@ const useAuthStore = create((set,get) => ({
       console.log('Signup successful:', response.data);
       if(response?.data?.token){
         localStorage.setItem("token", response.data.token);
+          await new Promise(resolve => setTimeout(resolve, 200));
       }
 
       // --- CRITICAL FIX: Ensure userRole and userId are set from response ---
@@ -103,13 +104,11 @@ const useAuthStore = create((set,get) => ({
         withCredentials: true,
       });
 
-      console.log('--- Debugging Login Success Response ---');
-      console.log('Full response.data from backend:', response.data);
-      console.log('Value of response.data.role received:', response.data.role);
-      console.log('Value of response.data.id received:', response.data.id);
+    
 
       if(response?.data?.token){
         localStorage.setItem("token", response.data.token);
+          await new Promise(resolve => setTimeout(resolve, 200));
       }
 
       // --- CRITICAL FIX: Ensure userRole and userId are set from response ---
