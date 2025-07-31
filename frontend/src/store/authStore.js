@@ -1,25 +1,20 @@
+
+import { decodeJwt } from 'jose';// You'll need to install this library
+
 import {create} from 'zustand';
 import axios from 'axios';
-import { decodeJwt } from 'jose';// You'll need to install this library
+ // Ensure correct path for your setup
 import axiosInstance from './axiosInstance';
 
-// Install jwt-decode:
-// npm install jwt-decode
-// or
-// yarn add jwt-decode
-
-const Api_url = "/user"
-
-// Helper function to decode token and get user details
+// Helper function to decode token (this helper function itself is fine)
 const getDecodedTokenDetails = () => {
   const token = localStorage.getItem('token');
   if (token) {
     try {
       const decoded = decodeJwt(token);
-      // Ensure your JWT payload has 'role' and 'id'
       return {
         role: decoded.role || null,
-        id: decoded.id || decoded._id || null // Handle both 'id' and '_id'
+        id: decoded.id || decoded._id || null
       };
     } catch (error) {
       console.error("Failed to decode token from localStorage:", error);
@@ -30,7 +25,8 @@ const getDecodedTokenDetails = () => {
   return { role: null, id: null };
 };
 
-const { role: initialUserRole, id: initialUserId } = getDecodedTokenDetails();
+// --- CRITICAL FIX: REMOVE THESE TOP-LEVEL INITIALIZATIONS ---
+// const { role: initialUserRole, id: initialUserId } = getDecodedTokenDetails(); // REMOVE THIS LINE
 
 
 const useAuthStore = create((set,get) => ({
@@ -40,10 +36,10 @@ const useAuthStore = create((set,get) => ({
   error: '',
   successMessage: '',
   loading: false,
-  userRole: initialUserRole, // <--- Initialize from decoded token
-  userId: initialUserId,     // <--- Initialize from decoded token
-
-  isLoggedIn: !!localStorage.getItem('token'), // Still check for token existence
+  // --- CRITICAL FIX: Initialize these to null/false directly ---
+  userRole: null, // <--- Initialize to null
+  userId: null,   // <--- Initialize to null
+  isLoggedIn: false, // <--- Initialize to false (will be set by initializeAuth or login/signup)
 
   // --- Actions ---
   setEmail: (email) => set({ email }),
@@ -55,43 +51,40 @@ const useAuthStore = create((set,get) => ({
   setUserRole: (role) => set({ userRole: role }),
   setUserId: (id) => set({ userId: id }),
 
+  // --- Action to explicitly initialize auth state from localStorage (called by App.jsx) ---
+  initializeAuth: () => {
+    const { role, id } = getDecodedTokenDetails(); // This is where decoding happens
+    console.log("Auth Store: Initializing auth state from token. Role:", role, "ID:", id); // Debugging
+    if (role && id) {
+      set({ isLoggedIn: true, userRole: role, userId: id });
+    } else {
+      set({ isLoggedIn: false, userRole: null, userId: null }); // Ensure cleared if no valid token
+    }
+  },
+
   signup: async (navigate) => {
     const { email, password } = get();
     set({ loading: true, error: '', successMessage: '' });
-
     try{
       const response = await axiosInstance.post(`${Api_url}/signup`, { email, password }, {
-        headers: { 'Content-Type': 'application/json' },
-        withCredentials: true,
+        headers: { 'Content-Type': 'application/json' }, withCredentials: true,
       });
 
-      console.log('Signup successful:', response.data);
       if(response?.data?.token){
         localStorage.setItem("token", response.data.token);
-          await new Promise(resolve => setTimeout(resolve, 200));
+        // This small delay can help localStorage persist before rapid navigation
+        await new Promise(resolve => setTimeout(resolve, 200)); // Keep this delay
       }
-
-      // --- CRITICAL FIX: Ensure userRole and userId are set from response ---
-      set({
-        successMessage: response.data.message,
-        loading: false,
-        isLoggedIn: true,
-        userRole: response.data.role, // Direct assignment from response
-        userId: response.data.id || response.data.user_id // Direct assignment from response
+      // Update state after successful API call and localStorage set
+      set({ successMessage: response.data.message, loading: false, isLoggedIn: true,
+            userRole: response.data.role, userId: response.data.id || response.data.user_id
       });
 
-      setTimeout(()=>{
-        navigate("/")
-      },2000)
+      // No need for a long timeout here, initializeAuth on next page load will handle it
+      navigate("/");
     } catch (error) {
       console.error("Signup error:", error);
-      set({
-        error: error.response?.data?.message || 'Signup failed',
-        loading: false,
-        isLoggedIn: false,
-        userRole: null,
-        userId: null
-      });
+      set({ error: error.response?.data?.message || 'Signup failed', loading: false, isLoggedIn: false, userRole: null, userId: null });
     }
   },
 
@@ -100,102 +93,48 @@ const useAuthStore = create((set,get) => ({
     set({loading:true, error:'',successMessage:''})
     try {
       const response = await axiosInstance.post(`${Api_url}/login`, { email, password }, {
-        headers: { 'Content-Type': 'application/json', },
-        withCredentials: true,
+        headers: { 'Content-Type': 'application/json', }, withCredentials: true,
       });
-
-    
 
       if(response?.data?.token){
         localStorage.setItem("token", response.data.token);
-          await new Promise(resolve => setTimeout(resolve, 200));
+        // Keep this small delay
+        await new Promise(resolve => setTimeout(resolve, 200)); // Keep this delay
       }
-
-      // --- CRITICAL FIX: Ensure userRole and userId are set from response ---
-      set({
-        successMessage: response.data.message,
-        loading: false,
-        isLoggedIn: true,
-        userRole: response.data.role, // Direct assignment from response
-        userId: response.data.id || response.data.user_id // Direct assignment from response
+      // Update state after successful API call and localStorage set
+      set({ successMessage: response.data.message, loading: false, isLoggedIn: true,
+            userRole: response.data.role, userId: response.data.id || response.data.user_id
       });
 
-      console.log("Auth store userRole after set:", get().userRole);
-      console.log("Auth store userId after set:", get().userId);
-
-
-      setTimeout(()=>{
-        navigate("/")
-      },1000)
-
+      // No need for a long timeout here, initializeAuth on next page load will handle it
+      navigate("/");
     } catch (error) {
       console.error("login error:", error);
-      set({
-        error: error.response?.data?.message || 'Login failed',
-        loading: false,
-        isLoggedIn: false,
-        userRole: null,
-        userId: null
-      });
+      set({ error: error.response?.data?.message || 'Login failed', loading: false, isLoggedIn: false, userRole: null, userId: null });
     }
   },
 
   logout: async (navigate) => {
     set({ loading: true, error: '', successMessage: '' });
-
     try {
-      const response = await axios.delete(`${Api_url}/logout`, {
-        withCredentials: true,
-      });
-
-      console.log('Logout successful (backend response):', response.data);
-
+      const response = await axios.delete(`${Api_url}/logout`, { withCredentials: true, });
       localStorage.removeItem('token');
-      set({
-        isLoggedIn: false,
-        successMessage: response.data.message || "Logged out successfully!",
-        loading: false,
-        userRole: null, // Clear on logout
-        userId: null
-      });
-      get().resetForm();
-
-      if (navigate) {
-        setTimeout(() => {
-          navigate("/login");
-        }, 200);
-      }
-
+      set({ isLoggedIn: false, successMessage: response.data.message || "Logged out successfully!",
+            loading: false, userRole: null, userId: null });
+      get().resetForm(); // Clears form also
+      if (navigate) { navigate("/login"); }
     } catch (error) {
       console.error("Logout failed error:", error);
-      let errorMessage = error.response?.data?.message || "Logout failed. Please try again.";
-
       localStorage.removeItem('token');
-      set({
-        isLoggedIn: false,
-        error: errorMessage,
-        loading: false,
-        userRole: null,
-        userId: null
-      });
+      set({ isLoggedIn: false, error: error.response?.data?.message || "Logout failed. Please try again.", loading: false, userRole: null, userId: null });
       get().resetForm();
-
-      if (navigate) {
-        setTimeout(() => {
-          navigate("/login");
-        }, 500);
-      }
+      if (navigate) { navigate("/login"); }
     }
   },
 
   resetForm: () => set({
-    email: '',
-    password: '',
-    error: '',
-    successMessage: '',
-    loading: false,
-    userRole: null,
-    userId: null
+    email: '', password: '', error: '', successMessage: '', loading: false,
+    userRole: null, userId: null, isLoggedIn: false
   }),
 
 }));
