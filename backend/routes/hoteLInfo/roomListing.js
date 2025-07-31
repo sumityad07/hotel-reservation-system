@@ -5,7 +5,7 @@ import { createRoomTypeListing,
     getRoomTypeListingsByHotel,
     updateRoomTypeListing,
     deleteRoomTypeListing } from '../../controller/hotelInfo.js/roomListing.js';
-import { protect, authorizeRoles } from '../../models/middleware/Auth.js';
+import { protect, authorizeRoles } from '../../middleware/Auth.js';
 
 const router = express.Router();
 

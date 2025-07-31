@@ -39,6 +39,10 @@ export const protect = async (req, res, next) => {
 export const authorizeRoles = (...roles) => {
     // This function remains the same as it relies on req.user which protect sets
     return (req, res, next) => {
+        console.log("--- AUTHORIZE ROLES DEBUG ---");
+        console.log("Required roles for this route:", roles); // Shows expected roles
+        console.log("User's role (from req.user.role):", req.user?.role); // <--- CRITICAL LOG: What is the actual role?
+        console.log("Is user's role included in required roles?", roles.includes(req.user?.role));
         if (!req.user || !roles.includes(req.user.role)) {
             return res.status(403).json({ message: "Forbidden" });
         }

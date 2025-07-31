@@ -81,25 +81,30 @@ export const createBooking = async (req, res) => {
 
 export const getBookingById = async (req, res) => {
     const { id } = req.params; // Booking ID from URL
+    loggedInUserId = req.user.id
     console.log("Fetching booking with ID:", id);
 
     try {
         const booking = await Booking.findById(id)
-                                    .populate('user', 'email username') // Populate user details
-                                    .populate('hotel', 'name location image') // Populate hotel details (name, location, image)
-                                    .populate('roomTypeListing', 'categoryName price maximumOccupancy image description'); // Populate room type details
-
+            .populate('user', 'email username') // Populate user details
+            .populate('hotel', 'name location image') // Populate hotel details (name, location, image)
+            .populate('roomTypeListing', 'categoryName price maximumOccupancy image description'); // Populate room type details
+       
         if (!booking) {
             console.log(`Booking ${id} not found.`);
             return res.status(404).json({ message: "Booking not found." });
         }
+         if (booking.user._id.toString() !== loggedInUserId && req.user.role !== 'admin') {
+            return res.status(403).json({ message: "Access denied. You can only view your own bookings." });
+        }
+
 
         console.log("Fetched booking:", booking);
         return res.status(200).json(booking);
     } catch (error) {
         console.error(`Error fetching booking by ID ${id}:`, error);
         if (error.name === 'CastError') {
-             return res.status(400).json({ message: 'Invalid Booking ID format.' });
+            return res.status(400).json({ message: 'Invalid Booking ID format.' });
         }
         return res.status(500).json({ message: "Internal server error." });
     }
@@ -110,19 +115,19 @@ export const getBookingsByUserId = async (req, res) => {
     if (!userId) {
         return res.status(400).json({ message: 'User ID is required' });
     }
-    try{
-        const bookings = await Booking.find({user: userId }).populate('hotel', 'name location image').populate('roomTypeListing', 'categoryName price maximumOccupancy image');
+    try {
+        const bookings = await Booking.find({ user: userId }).populate('hotel', 'name location image').populate('roomTypeListing', 'categoryName price maximumOccupancy image');
         if (bookings.length === 0) {
             return res.status(404).json({ message: 'No bookings found for this user' });
         }
         return res.status(200).json(bookings);
     }
     catch (error) {
-         if (error.name === 'CastError') {
+        if (error.name === 'CastError') {
             return res.status(400).json({ message: "Invalid User ID format." });
         }
         console.error('Error fetching bookings:', error);
-        return res.status(500).json({ message: 'Internal server error',error: error.message });
+        return res.status(500).json({ message: 'Internal server error', error: error.message });
     }
 }
 
@@ -148,14 +153,10 @@ export const updateBookingStatus = async (req, res) => {
         const currentStatus = booking.status;
         const newStatus = status.toLowerCase();
 
-        if (currentStatus === newStatus) 
-            { return res.status(400).json({ message: `Booking is already ${newStatus}. No change made.` }); }
-        if (currentStatus === 'cancelled' || currentStatus === 'completed') 
-            { return res.status(400).json({ message: `Booking is already ${currentStatus} and cannot be changed.` }); }
-        if (newStatus === 'confirmed' && currentStatus !== 'pending') 
-            { return res.status(400).json({ message: 'Booking can only be confirmed from a "pending" status.' }); }
-        if (newStatus === 'cancelled' && !['pending', 'confirmed'].includes(currentStatus))
-             { return res.status(400).json({ message: 'Booking can only be cancelled from "pending" or "confirmed" status.' }); }
+        if (currentStatus === newStatus) { return res.status(400).json({ message: `Booking is already ${newStatus}. No change made.` }); }
+        if (currentStatus === 'cancelled' || currentStatus === 'completed') { return res.status(400).json({ message: `Booking is already ${currentStatus} and cannot be changed.` }); }
+        if (newStatus === 'confirmed' && currentStatus !== 'pending') { return res.status(400).json({ message: 'Booking can only be confirmed from a "pending" status.' }); }
+        if (newStatus === 'cancelled' && !['pending', 'confirmed'].includes(currentStatus)) { return res.status(400).json({ message: 'Booking can only be cancelled from "pending" or "confirmed" status.' }); }
 
         booking.status = newStatus;
         await booking.save();

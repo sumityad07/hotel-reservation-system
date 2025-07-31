@@ -14,7 +14,7 @@ const router = express.Router();
 
 
 
-import { protect, authorizeRoles } from '../../models/middleware/Auth.js';
+import { protect, authorizeRoles } from '../../middleware/Auth.js';
 
 
 // Public routes for viewing hotels

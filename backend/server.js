@@ -1,14 +1,14 @@
 import express from "express";
 import dotenv from "dotenv";
 import db from "./utils/mangoose.js";
-import userRoutes from "./routes/booking/users/user.js";
+import userRoutes from "./routes/users/user.js";
 import hotelRoutes from "./routes/hoteLInfo/hotel.js";
 import roomRoutes from "./routes/hoteLInfo/roomListing.js";
 import bookingRoutes from "./routes/booking/booking.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import { getHotelById } from "./controller/hotelInfo.js/hotelinfo.js";
-import { protect } from "./models/middleware/Auth.js";
+import { protect } from "./middleware/Auth.js";
 dotenv.config();
 
 
