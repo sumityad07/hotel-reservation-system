@@ -28,7 +28,7 @@ const getDecodedTokenDetails = () => {
 // --- CRITICAL FIX: REMOVE THESE TOP-LEVEL INITIALIZATIONS ---
 // const { role: initialUserRole, id: initialUserId } = getDecodedTokenDetails(); // REMOVE THIS LINE
 
-
+const Api_url = "/user"
 const useAuthStore = create((set,get) => ({
   // --- State ---
   email: '',
