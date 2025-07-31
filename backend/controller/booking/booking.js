@@ -79,32 +79,42 @@ export const createBooking = async (req, res) => {
     }
 };
 
+
 export const getBookingById = async (req, res) => {
     const { id } = req.params; // Booking ID from URL
-    loggedInUserId = req.user.id
+    console.log("--- Backend: getBookingById Controller Hit ---");
     console.log("Fetching booking with ID:", id);
 
     try {
         const booking = await Booking.findById(id)
-            .populate('user', 'email username') // Populate user details
-            .populate('hotel', 'name location image') // Populate hotel details (name, location, image)
-            .populate('roomTypeListing', 'categoryName price maximumOccupancy image description'); // Populate room type details
-       
+                                    .populate('user', 'email username') // Populate user details
+                                    .populate('hotel', 'name location image') // Populate hotel details
+                                    .populate('roomTypeListing', 'categoryName price maximumOccupancy image description'); // Populate room type details
+
         if (!booking) {
             console.log(`Booking ${id} not found.`);
             return res.status(404).json({ message: "Booking not found." });
         }
-         if (booking.user._id.toString() !== loggedInUserId && req.user.role !== 'admin') {
-            return res.status(403).json({ message: "Access denied. You can only view your own bookings." });
+
+        // --- CRITICAL FIX: Define loggedInUserId here ---
+        // This line was either missing or commented out previously
+        const loggedInUserId = req.user.id; // <--- ADD OR UNCOMMENT THIS LINE (assuming req.user.id is correct)
+        console.log("Logged-in user ID for authorization check:", loggedInUserId);
+
+        // --- Authorization check for user's own booking ---
+        // This is the code that uses loggedInUserId
+        if (booking.user._id.toString() !== loggedInUserId && req.user.role !== 'admin' && req.user.role !== 'owner') { // Added owner role check for completeness
+            console.log(`Access denied for booking ${id}. User ID mismatch or insufficient role.`);
+            return res.status(403).json({ message: "Access denied. You can only view your own bookings or need higher privileges." });
         }
 
+        console.log("Fetched booking (before sending):", booking);
+        return res.status(200).json(booking); // Send the fetched booking data
 
-        console.log("Fetched booking:", booking);
-        return res.status(200).json(booking);
     } catch (error) {
-        console.error(`Error fetching booking by ID ${id}:`, error);
+        console.error(`Error in getBookingById catch block for ID ${id}:`, error);
         if (error.name === 'CastError') {
-            return res.status(400).json({ message: 'Invalid Booking ID format.' });
+             return res.status(400).json({ message: 'Invalid Booking ID format.' });
         }
         return res.status(500).json({ message: "Internal server error." });
     }
